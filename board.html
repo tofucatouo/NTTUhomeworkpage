@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>留言板</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #F5F5F5;
+      font-family: 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+      color: #293e53;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .navbar {
+      width: 100%;
+      background: #FFFFFFdd;
+      box-shadow: 0 2px 12px #A3BFD922;
+      padding: 0 6vw;
+      display: flex;
+      align-items: center;
+      height: 70px;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      backdrop-filter: blur(3px);
+    }
+    .navbar .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #293e53;
+      letter-spacing: 0.14em;
+      margin-right: 38px;
+      text-shadow: 0 2px 7px #A3BFD92a;
+      user-select: none;
+    }
+    .navbar .navlinks {
+      display: flex;
+      gap: 24px;
+      flex: 1;
+    }
+    .navbar .navlink {
+      font-size: 1.3rem;
+      color: #293e53;
+      text-decoration: none;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      border-bottom: 2.5px solid transparent;
+      padding: 4px 12px;
+      border-radius: 5px 5px 0 0;
+      transition: color 0.16s, border-bottom 0.18s, background 0.14s;
+      cursor: pointer;
+    }
+    .navbar .navlink.active,
+    .navbar .navlink:hover {
+      color: #293e53;
+      border-bottom: 2.5px solid #A3BFD9;
+      background: #F5F5F5;
+      font-weight: 700;
+    }
+    .main-wrap { padding-top: 90px; }
+
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(60px);
+      transition: opacity 0.7s cubic-bezier(.4,.2,.2,1), transform 0.7s cubic-bezier(.4,.2,.2,1);
+    }
+    .fade-in-up.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .meme-left, .meme-right {
+      position: fixed;
+      top: 85%;
+      transform: translateY(-50%);
+      width: 280px;
+      max-width: 25vw;
+      pointer-events: none;
+      opacity: 0.95;
+      filter: drop-shadow(0 4px 12px #A3BFD955);
+      z-index: 99;
+    }
+    .meme-left { left: 4vw; }
+    .meme-right { right: 4vw; }
+    @media (max-width: 1200px) {
+      .meme-left, .meme-right { width: 130px; }
+    }
+    @media (max-width: 900px) {
+      .meme-left, .meme-right { width: 90px; }
+      .navbar .logo { font-size: 1.3rem;}
+      .navbar {height: 54px;}
+      .main-wrap {padding-top: 64px;}
+    }
+    @media (max-width: 700px) {
+      .meme-left, .meme-right { display: none; }
+      .navbar {padding: 0 10px;}
+      .navbar .navlinks {gap: 10px;}
+    }
+    .container {
+      max-width: 1050px;
+      margin: 90px auto;
+      background: #FFFFFF;
+      border-radius: 24px;
+      box-shadow: 0 9px 36px #A3BFD940;
+      padding: 72px 54px 54px 54px;
+      text-align: center;
+      border: 2.25px solid #B5C9B8;
+    }
+    .board-wrap {
+      width: 100%;
+      background: #f9f9f9;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px #a3bfd925;
+      padding: 30px 24px 20px 24px;
+      min-height: 400px;
+      margin: 0 auto;
+      box-sizing: border-box;
+      opacity: 0;
+      transform: scale(0.98) translateY(40px);
+      transition: opacity 0.5s cubic-bezier(.6,.1,.2,1), transform 0.5s cubic-bezier(.6,.1,.2,1);
+    }
+    .fade-in-up.show .board-wrap {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    .board-title {
+      font-size: 2rem;
+      color: #293e53;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .board-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .board-form input, .board-form textarea {
+      font-size: 1.2rem;
+      border-radius: 8px;
+      border: 1.5px solid #B5C9B8;
+      padding: 9px 12px;
+      outline: none;
+      transition: border 0.2s;
+      font-family: inherit;
+      background: #fff;
+      color: #293e53;
+    }
+    .board-form input:focus, .board-form textarea:focus {
+      border: 1.5px solid #A3BFD9;
+    }
+    .board-form textarea {
+      resize: vertical;
+      min-width: 600px;
+      min-height: 38px;
+      max-width: 640px;
+      max-height: 100px;
+    }
+    .board-form button {
+      background: #A3BFD9;
+      color: #293e53;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 11px 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #a3bfd930;
+    }
+    .board-form button:hover { background: #B5C9B8; }
+    .msg-list {
+      margin-top: 10px;
+      padding-left: 0;
+      list-style: none;
+    }
+    .msg-item {
+      background: #fff;
+      border-radius: 7px;
+      padding: 14px 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 7px #b5c9b81a;
+      border-left: 4px solid #A3BFD9;
+      color: #293e53;
+    }
+    .msg-header {
+      font-size: 1.01rem;
+      color: #293e53;
+      margin-bottom: 7px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .msg-content {
+      font-size: 1.13rem;
+      color: #293e53;
+      line-height: 1.6;
+      word-break: break-all;
+    }
+    .msg-date {
+      font-size: 0.96rem;
+      color: #293e53;
+      text-align: right;
+      margin-top: 2px;
+    }
+    .loading-text {
+      text-align: center;
+      color: #293e53;
+      font-size: 1.1rem;
+      margin: 8px 0 16px 0;
+      letter-spacing: 0.06em;
+    }
+    .clear-btn {
+      background: #eee;
+      color: #293e53;
+      border: 1.2px solid #B5C9B8;
+      border-radius: 6px;
+      font-size: 1.01rem;
+      padding: 5px 13px;
+      margin-left: 14px;
+      cursor: pointer;
+      transition: background 0.14s;
+    }
+    .clear-btn:hover {
+      background: #d8e2e7;
+    }
+  </style>
+</head>
+<body>
+  <!-- 導覽列 -->
+  <nav class="navbar">
+    <span class="logo">自我介紹紹紹紹</span>
+    <span class="navlinks">
+      <a class="navlink" href="index.html">個人介紹</a>
+      <a class="navlink active" href="board.html">留言板</a>
+    </span>
+  </nav>
+  <!-- meme 動圖 -->
+  <img src="Y3il.gif" alt="meme left" class="meme-left">
+  <img src="6md.gif" alt="meme right" class="meme-right">
+  <div class="main-wrap">
+    <div class="container fade-in-up" id="mainContainer">
+      <div class="board-wrap">
+        <div class="board-title">留言板
+          <button class="clear-btn" onclick="clearAllMsgs()" title="清空所有留言">清空留言</button>
+        </div>
+        <form class="board-form" onsubmit="return postMsg()">
+          <textarea id="msg" maxlength="120" placeholder="想說的話..." required></textarea>
+          <button type="submit">留言！</button>
+        </form>
+        <div class="loading-text" id="loading-text">載入留言中...</div>
+        <ul class="msg-list" id="msg-list"></ul>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 進場動畫
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        document.getElementById('mainContainer').classList.add('show');
+      }, 50);
+      fetchComments();
+    });
+
+    // 從 localStorage 抓留言
+    function fetchComments() {
+      document.getElementById('loading-text').style.display = 'block';
+      document.getElementById('msg-list').innerHTML = '';
+      // 抓 localStorage，key: 'guestbook_comments'
+      let data = [];
+      try {
+        data = JSON.parse(localStorage.getItem('guestbook_comments')) || [];
+      } catch(e) {}
+      document.getElementById('loading-text').style.display = 'none';
+      data.forEach(function(comment) {
+        addMsg(comment.user, comment.content, comment.created_at);
+      });
+    }
+
+    // 新增一則留言到畫面
+    function addMsg(user, msg, date) {
+      const li = document.createElement('li');
+      li.className = 'msg-item';
+      li.innerHTML = `<div class="msg-header">${user}</div>
+                      <div class="msg-content">${msg.replace(/\n/g, '<br>')}</div>
+                      <div class="msg-date">${date}</div>`;
+      document.getElementById('msg-list').appendChild(li);
+    }
+
+    // 寫留言到 localStorage
+    function postMsg() {
+      const user = "匿名";
+      const msg = document.getElementById('msg').value.trim();
+      if (!user || !msg) return false;
+      let comments = [];
+      try {
+        comments = JSON.parse(localStorage.getItem('guestbook_comments')) || [];
+      } catch(e) {}
+      const now = new Date();
+      // 格式 yyyy-mm-dd hh:mm
+      const created_at = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0') + ' ' +
+        String(now.getHours()).padStart(2, '0') + ':' +
+        String(now.getMinutes()).padStart(2, '0');
+      comments.push({
+        user: user,
+        content: msg,
+        created_at: created_at
+      });
+      localStorage.setItem('guestbook_comments', JSON.stringify(comments));
+      document.getElementById('msg').value = '';
+      fetchComments();
+      return false;
+    }
+
+    // 清空全部留言
+    function clearAllMsgs() {
+      if (confirm('確定要清空所有留言嗎？')) {
+        localStorage.removeItem('guestbook_comments');
+        fetchComments();
+      }
+    }
+  </script>
+</body>
+</html>
